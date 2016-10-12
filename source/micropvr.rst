@@ -169,17 +169,18 @@ micropvr
         "log-syslog": false,
         "log-verbose-level": 3,
         "log-path": "/var/log/micropvr/micropvr.log",
+        "log-state-period": 0, // in Minutes
+        "log-state-path": "/var/log/micropvr/micropvr_state.log",
         "json-rpc-listen-host": "0.0.0.0",
         "json-rpc-listen-port": 4089,
         "task-postpone-time": 60,
-        "task-activation-period": 900,
-        "task-caching-period": 450,
         "records-checking-period": 60,
         "records-outdated-checking-period": 5,
         "records-removing-period": 5,
-        "records-min-free-space": 100000, // space in MiB
+        "records-min-free-space": 10000, // space in MiB
+        "records-default-reserve-size": 20480, //space in MiB
         "recorder-check-free-space": true,
-        "recorder-pid-path": "/var/run/",
+        "recorder-pid-path": "/var/run/micropvr/",
         "recorder-cmd": "recorder",
         "recorder-log-enabled": true,
         "recorder-log-path": "/var/log/micropvr/recorder.log",
@@ -206,6 +207,14 @@ log-path ``str``
 log-verbose-level ``int``
   Уровень логирования от 0 до 5, 5 - максимальный DEBUG уровень.
 
+log-state-period ``int``
+  *С версии 1.5.0*
+  Период записи лога состояния в минутах. При значении 0 запись отключается.
+  
+log-state-path ``str``
+  *С версии 1.5.0*
+  Путь до файла в который будет записываться лог состояния.
+  
 log-foreground ``bool``
   Вывод лога в stdout.
 
@@ -221,11 +230,13 @@ json-rpc-listen-port ``int``
   Номер порта TCP для JSON RPC API, по-умолчанию 9089.
 
 task-activation-period ``int``
+  *Убрано в версии 1.5.0*
   Время в секундах, задающее условие: в очередь запуска попадают задачи,
   выполнение которых должно наступить в течение ближайших N секунд.
   По-умолчанию 900.
 
 task-caching-period ``int``
+  *Убрано в версии 1.5.0*
   Период кеширования задач внутренним планировщиком, в секундах, по-умолчанию 450.
 
 records-outdated-checking-period ``int``
@@ -235,14 +246,23 @@ records-removing-period ``int``
   Минимальный интервал удаления устаревших записей.
 
 records-min-free-space ``int``
-  Критический объем свободного места на диске в MiB, при котором разрешена запись.
+  *С версии 1.2.1*
+  Минимальный объем свободного места на диске в MiB, при котором разрешена запись.
+  
+records-default-reserve-size ``int``
+  *С версии 1.4.0*
+  Объём резервируемого на диске места для одной активной записи в MiB, по умолчанию 20480.
+  Запись не будет производится, если включен механизм проверки свободного места на диске и объём места после резервирования станет меньше минимально разрешённого.
 
 recorder-check-free-space ``bool``
+  *С версии 1.2.1*
   Определяет включение механизма проверки свободного места на диске.
-
+  
 recorder-cmd ``str``
+  *С версии 1.5.0*
   Команда запуска модуля MicroPVR recorder, который осуществляет запись
   потока в файл (для запуска recorder и совместимых по CLI-интерфейсу программ).
+  По умолчнию "recorder".
 
 recorder-pid-path ``str``
   Путь для записи pid-файлов recorder'ов, по-умолчанию "/var/run/micropvr".
@@ -339,8 +359,71 @@ ts
         if 3 restarts within 5 cycles then timeout
         group micropvr
 
-.. _jsonrpc-api:
+.. _state_log:
 
+*************
+Лог состояния
+*************
+
+
+.. _micropvr_control:
+
+****************
+micropvr_control
+****************
+
+micropvr_control - стандартная утилита для управления и мониторинга в состве пакета micropvr. Требует включенного JSON RPC API.
+
+Пример использования (получение списка файлов записей для канала с ID 4):
+::
+    micropvr_control -H 127.0.0.1 -f get_records -a 4 -d
+
+Опции
+-----
+
+-h
+  Вывести краткую справку.
+-V
+  Вывести версию.
+-H
+  Хост API micropvr. Если опция не задана, то будет использоваться 127.0.0.1.
+-p
+  Порт API micropvr. Если опция не задана, то будет использоваться 4089.
+-q
+  "Тихий режим". Не выводить сообщения в стандартный поток.
+-d
+  "Режим отладки". Печатать ответ от сервера в стандартный поток в виде JSON-документов.
+-y
+  Не запрашивать подтверждение для операций удаления и отмены.
+-f
+  Имя функции API. Список функций приведён ниже.
+-a
+  Неименовынные аргументы функции. Задаются в строго определённом порядке через пробел.
+-A
+  Именованные аргументы функции. Задаются в любом порядке через пробел в формате имя_аргумента_аргумент. Например, -A channel_ID=8 record_location=/tmp/pvr. Имена аргументов чувствительны к регистру.
+  
+Должно быть указано не более одной опции -a или -A. В противном случае корректное поведение не гарантируется.
+
+Функции
+-------
+
+``get_all [channel_ID]``
+  Выводит список выполняемых задач и информацию о точках монтирования для канала ``channel_ID``. 
+  Если ``channel_ID`` не указан, выводит задачи и точки монтирования для всех каналов.
+``get_records [channel_ID]``
+  Выводит список файлов записей для канала ``channel_ID``. Если ``channel_ID`` не указан, выводит все файлы записей.
+``cancel_task channel_ID [record_location]``
+  Отменяет все выполняемые задачи для канала с ID ``channel_ID`` и директории записи ``record_location``. 
+  Если ``record_location`` не задан, отменяет все задачи для заданного канала.
+``delete_records [timestamp] [channel_ID]``
+  Удаляет файлы, в которые не ведётся активная запись, для канала ``channel_ID`` и запись которых была начата не позже ``timestamp``.
+  Если ``channel_ID`` и ``timestamp`` не указаны, удаляет все записи.
+``delete_records_days ndays [channel_ID]``
+  Удаляет файлы, в которые не ведётся активная запись, для канала ``channel_ID`` за самые старые ``ndays`` дней.
+  Если ``channel_ID`` не указан, удаляет все записи за самые старые ``ndays`` дней.
+    
+.. _jsonrpc-api:
+    
 *********************
 Описание JSON-RPC API
 *********************
