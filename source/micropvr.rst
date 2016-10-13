@@ -181,8 +181,7 @@ micropvr
         "recorder-log-enabled": true,
         "recorder-log-path": "/var/log/micropvr/recorder.log",
         "recorder-init-timeout": 5,
-        "recorder-checking-period": 1,
-        "channels" []
+        "recorder-checking-period": 1
     }
 
 .. _micropvr-options-description:
@@ -284,11 +283,6 @@ recorder-init-timeout ``int``
 
 recorder-cheking-period ``int``
   Период проверки состояния recorder'ов, в секундах, по-умолчанию 1.
-
-channels ``list``
-  Список потоков для записи. Позволяет задать задачи на запись статисчески, без
-  использования внешнего управляющего сервера. Опции каналов соответствуют
-  параметрам метод **Add task** :ref:`JSON-RPC API <jsonrpc-api>`.
 
 .. _micropvs_configuration:
 
