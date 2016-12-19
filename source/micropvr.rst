@@ -226,6 +226,10 @@ json-rpc-listen-host ``str``
 json-rpc-listen-port ``int``
   Номер порта TCP для JSON RPC API, по-умолчанию 4089.
 
+task-postpone-time ``int``
+  Время в секундах, на которое будет отложена задача при неудачной попытке ее выполнения.
+  По-умолчанию 60.
+
 task-activation-period ``int``
   *Убрано в версии 1.5.0*
   
