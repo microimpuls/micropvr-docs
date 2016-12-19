@@ -224,7 +224,7 @@ json-rpc-listen-host ``str``
   Значение "0.0.0.0" означает слушать на всех интерфейсах.
 
 json-rpc-listen-port ``int``
-  Номер порта TCP для JSON RPC API, по-умолчанию 9089.
+  Номер порта TCP для JSON RPC API, по-умолчанию 4089.
 
 task-activation-period ``int``
   *Убрано в версии 1.5.0*
