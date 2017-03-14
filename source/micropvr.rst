@@ -165,14 +165,13 @@ micropvr
         "log-syslog": false,
         "log-verbose-level": 3,
         "log-path": "/var/log/micropvr/micropvr.log",
-        "log-state-period": 0, // in Minutes
+        "log-state-period": 0, // in minutes
         "log-state-path": "/var/log/micropvr/micropvr_state.log",
         "json-rpc-listen-host": "0.0.0.0",
         "json-rpc-listen-port": 4089,
-        "task-postpone-time": 60,
-        "records-checking-period": 60,
-        "records-outdated-checking-period": 5,
-        "records-removing-period": 5,
+        "task-postpone-time": 60, // in seconds
+        "records-checking-period": 60, // in seconds
+        "records-removing-period": 5, // in seconds
         "records-min-free-space": 10000, // space in MiB
         "records-default-reserve-size": 20480, //space in MiB
         "recorder-check-free-space": true,
@@ -180,8 +179,8 @@ micropvr
         "recorder-cmd": "recorder",
         "recorder-log-enabled": true,
         "recorder-log-path": "/var/log/micropvr/recorder.log",
-        "recorder-init-timeout": 5,
-        "recorder-checking-period": 1
+        "recorder-init-timeout": 5, // in seconds
+        "recorder-checking-period": 1 // in seconds
     }
 
 .. _micropvr-options-description:
@@ -198,7 +197,7 @@ log-facility ``int``
 
 log-path ``str``
   Путь до лог-файла для логирования напрямую без syslogd.
-
+  
 log-verbose-level ``int``
   Уровень логирования от 0 до 5, 5 - максимальный DEBUG уровень.
 
@@ -245,11 +244,13 @@ task-caching-period ``int``
 records-checking-period ``int``
   Время проверки размера записей в секундах, по умолчанию 60. Определяет точность позиционирования по архиву для функции перемотки.
 
-records-outdated-checking-period ``int``
-  Период проверки и удаления устаревших записей на диске.
-
 records-removing-period ``int``
-  Минимальный интервал удаления устаревших записей.
+  Минимальный интервал удаления устаревших записей в секундах. По умолчанию 5.
+  
+records-outdated-checking-period  ``int``
+  *Убрано в версии 1.5.0*
+  
+  Интервал проверки устаревших записей в секундах. По умолчанию 5.
 
 records-min-free-space ``int``
   *С версии 1.2.1*
@@ -261,11 +262,12 @@ records-default-reserve-size ``int``
   
   Объём резервируемого на диске места для одной активной записи в MiB, по умолчанию 20480.
   Запись не будет производиться, если включен механизм проверки свободного места на диске и объём места после резервирования станет меньше минимально разрешённого.
+  По умолчанию 20480.
 
 recorder-check-free-space ``bool``
   *С версии 1.2.1*
   
-  Определяет включение механизма проверки свободного места на диске.
+  Определяет включение механизма проверки свободного места на диске. По умолчанию false.
   
 recorder-cmd ``str``
   *С версии 1.5.0*
@@ -289,7 +291,8 @@ recorder-init-timeout ``int``
   задачи будет отложено.
 
 recorder-cheking-period ``int``
-  Период проверки состояния recorder'ов, в секундах, по-умолчанию 1.
+  Период проверки состояния recorder'ов, в секундах, по-умолчанию 1.  
+  
 score-max-score ``float``
   *С версии 1.5.1*
   
