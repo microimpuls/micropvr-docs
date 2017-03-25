@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'micropvr'
+project = u'MicroPVR'
 copyright = u'2016, Microimpuls LLC, www.microimpuls.com'
 author = u'Konstantin Shpinev, Alexander Larin'
 
