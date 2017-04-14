@@ -61,6 +61,7 @@ MicroPVR, а также все сопутствующие пакеты и нео
         "records-removing-period": 5, // in seconds
         "records-min-free-space": 10000, // space in MiB
         "records-default-reserve-size": 20480, //space in MiB
+        "records-block-active-time": 2 // in minutes
         "recorder-check-free-space": true,
         "recorder-pid-path": "/var/run/micropvr/",
         "recorder-cmd": "recorder",
@@ -145,6 +146,11 @@ records-default-reserve-size ``int``
   Объём резервируемого на диске места для одной активной записи в MiB, по умолчанию 20480.
   Запись не будет производиться, если включен механизм проверки свободного места на диске и объём места после резервирования станет меньше минимально разрешённого.
   По умолчанию 20480.
+  
+records-block-active-time ``int``
+  *С версии 1.7.0*
+  
+   Время блокировки удаления активных записей в минутах после истечения их срока жизни. Запись считается активной, если к ней было хотя бы одно обращение. По умолчанию 240.
 
 recorder-check-free-space ``bool``
   *С версии 1.2.1*
