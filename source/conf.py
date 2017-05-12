@@ -45,9 +45,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'micropvr'
-copyright = u'2016, Konstantin Shpinev'
-author = u'Konstantin Shpinev'
+project = u'MicroPVR'
+copyright = u'2016, Microimpuls LLC, www.microimpuls.com'
+author = u'Konstantin Shpinev, Alexander Larin'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
