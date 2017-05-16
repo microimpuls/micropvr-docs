@@ -57,11 +57,12 @@ MicroPVR, а также все сопутствующие пакеты и нео
         "json-rpc-listen-host": "0.0.0.0",
         "json-rpc-listen-port": 4089,
         "task-postpone-time": 60, // in seconds
-        "records-checking-period": 60, // in seconds
+        "records-checking-period": 30, // in seconds
         "records-removing-period": 5, // in seconds
         "records-min-free-space": 10000, // space in MiB
         "records-default-reserve-size": 20480, //space in MiB
         "records-block-active-time": 2 // in minutes
+        "records-default-segment-size": 30, //in seconds
         "recorder-check-free-space": true,
         "recorder-pid-path": "/var/run/micropvr/",
         "recorder-cmd": "recorder",
@@ -129,6 +130,11 @@ records-checking-period ``int``
 
 records-removing-period ``int``
   Минимальный интервал удаления устаревших записей в секундах. По умолчанию 5.
+  
+records-default-segment-size ``int``
+  *С версии 1.8.0*
+
+  Максимальный размер сегмента плейлист (для метода API get_playlist_name), должен быть не меньше, чем records-checking-period. По умолчанию 60.
   
 records-outdated-checking-period  ``int``
   *Убрано в версии 1.5.0*
