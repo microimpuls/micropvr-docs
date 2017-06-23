@@ -50,6 +50,7 @@ MicroPVR, а также все сопутствующие пакеты и нео
     {
         "log-foreground": false,
         "log-syslog": false,
+        "log-syslog-critical": false,
         "log-verbose-level": 3,
         "log-path": "/var/log/micropvr/micropvr.log",
         "log-state-period": 0, // in minutes
@@ -63,18 +64,31 @@ MicroPVR, а также все сопутствующие пакеты и нео
         "records-default-reserve-size": 20480, //space in MiB
         "records-block-active-time": 2 // in minutes
         "records-default-segment-size": 30, //in seconds
+        "records-link-dir": "/var/pvr_links/",
+        "records-remove-on-low-space": false,
         "recorder-check-free-space": true,
         "recorder-pid-path": "/var/run/micropvr/",
         "recorder-cmd": "recorder",
-        "recorder-log-enabled": true,
+        "recorder-log-enabled": false,
         "recorder-log-path": "/var/log/micropvr/recorder.log",
-        "recorder-init-timeout": 5, // in seconds
-        "recorder-checking-period": 1 // in seconds
+        "recorder-init-timeout": 5,
+        "recorder-checking-period": 1,
+        "recorder-check-free-space": true,
+        "monitor-request-lifetime": 60, // in seconds
+        "score-max-score": 20.0,
+        "score-max-net-load": 700, // in MiB
+        "score-max-sessions": 1000,
+        "score-max-cpu-la1": 1.0
     }
 
 log-syslog ``bool``
+  *С версии 1.9.0*
+  
   Использовать ли службу syslogd для записи логов в /var/log/syslog.
   Не рекомендуется включать при интенсивном логировании.
+  
+log-syslog-critical ``bool``
+  Использовать ли службу syslogd для записи логов в /var/log/syslog для записей логов уровня CRITICAL вне зависимости от значения параметра log-syslog.
 
 log-facility ``int``
   Тег в syslog.
@@ -157,6 +171,19 @@ records-block-active-time ``int``
   *С версии 1.7.0*
   
    Время блокировки удаления активных записей в минутах после истечения их срока жизни. Запись считается активной, если к ней было хотя бы одно обращение. По умолчанию 240.
+   
+records-remove-on-low-space ``bool``
+  *С версии 1.9.0*
+  
+  Включает удаление наиболее старых записей в случае, если реальное свободное место на диске меньше критического. 
+  Параметр записи ``lifetime`` при этом игнорируется. Файлы, в которые ещё идёт запись, не будут удалены.
+  
+records-link-dir ``str``
+  *С версии 1.9.0*
+  
+  Путь для символьных ссылок на директории, в которые идёт запись. Пустая строка отключает использование ссылок.
+  Например, при ``records-link-dir`` равном ``/var/pvr_links/`` путь до ссылок будет иметь вид ``/var/pvr_links/F6D124FC/``, а до записей - ``/var/pvr_links/F6D124FC/ch_3/c3_t1498201120_77.ts``.
+  Причём ``F6D124FC`` - хэш от полного пути директории, которая была указана при создании задачи и в которую ведётся запись.
 
 recorder-check-free-space ``bool``
   *С версии 1.2.1*
@@ -185,7 +212,13 @@ recorder-init-timeout ``int``
   задачи будет отложено.
 
 recorder-cheking-period ``int``
-  Период проверки состояния recorder'ов, в секундах, по-умолчанию 1.  
+  Период проверки состояния recorder'ов, в секундах, по умолчанию 1.
+  
+monitor-request-lifetime ``int``
+  *С версии 1.9.0*
+  
+  Срок храниения информации о запросах в секундах, по умолчанию 60. 
+  Используется при вычислении статистики и подсчёта количества сессий.
 
 score-max-score ``float``
   *С версии 1.5.1*
@@ -196,16 +229,19 @@ score-max-net-load ``integer``
   *С версии 1.5.1*
   
   Максимальная загрузка исходящего сетевого потока в Mbit/sec. По умолчанию 700.
+  Значение -1 отключает использование данного параметра при подсчёте score.
 
 score-max-sessions ``integer``
   *С версии 1.5.1*
   
   Максимальное количество сессий. По умолчанию 10000.
+  Значение -1 отключает использование данного параметра при подсчёте score.
 
 score-max-cpu-la1 ``float``
   *С версии 1.5.1*
   
   Максимальное значение средней загрузки вычислительных ресурсов за 1 минуту. По умолчанию 1.0.
+  Значение -1 отключает использование данного параметра при подсчёте score.
 
 .. _micropvs_configuration:
 
@@ -245,6 +281,15 @@ score-max-cpu-la1 ``float``
         send_timeout 36000;
         server {
             listen 8080;
+            location /pvr/playlist {
+                pvr_api_host "127.0.0.1";
+                pvr_api_port 4089;
+                pvr_playlist;
+            }
+            location /pvr/ {
+                pvr_location /var/pvr/links/;
+            }
+            
             location / {
                 pvr_api_host "127.0.0.1";
                 pvr_api_port 4089;
@@ -267,6 +312,12 @@ pvr_api_port ``int``
 
 ts
   Подключение модуля micropvs.
+  
+pvr_playlist
+  Перенаправляет клиента на плейлист, соответствующий запросу.
+  
+pvr_location ``str``
+  Путь до директории, указанной в параметре ``records-link-dir``.
 
 Остальные параметры стандартные для сервера `nginx <http://nginx.org/en/docs/>`_.
 
